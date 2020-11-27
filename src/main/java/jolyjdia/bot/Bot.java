@@ -29,7 +29,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public final class Bot {
     public static final ExecutorService ASYNC_POOL = new ThreadPoolExecutor(
-            Runtime.getRuntime().availableProcessors(), Integer.MAX_VALUE,
+            Math.max(1, Runtime.getRuntime().availableProcessors() >> 1), Integer.MAX_VALUE,
             15, MILLISECONDS,
             new SynchronousQueue<>(),
             new ThreadFactory() {
