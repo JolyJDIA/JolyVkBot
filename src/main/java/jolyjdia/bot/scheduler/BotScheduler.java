@@ -27,7 +27,7 @@ public class BotScheduler {
             }
             if (!task.isPeriodic()) {
                 taskQueue.finishPoll();
-                System.out.println((task.isAsync() ? "Async" : "Sync") + "Scheduler: task deleted (" + taskQueue.size() + ')');
+                System.out.println((task.isAsync() ? "Async" : "Sync") + "Scheduler: task deleted (" + task.getUid() + ')');
                 return;
             }
             taskQueue.setNexRun(now + task.getPeriod());

@@ -3,10 +3,10 @@ package jolyjdia.bot;
 import com.google.common.collect.Iterators;
 import com.google.gson.JsonObject;
 import jolyjdia.bot.commands.defaults.CitiesCommands;
+import jolyjdia.bot.commands.defaults.UtilsCommands;
 import jolyjdia.bot.manager.UserManager;
 import jolyjdia.bot.scheduler.BotScheduler;
 import jolyjdia.bot.utils.MyHttpClient;
-import jolyjdia.bot.utils.timeformat.TemporalDuration;
 import jolyjdia.vk.sdk.actors.GroupActor;
 import jolyjdia.vk.sdk.actors.UserActor;
 import jolyjdia.vk.sdk.client.TransportClient;
@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static jolyjdia.bot.commands.defaults.UtilsCommands.NEW_YEAR;
 
 public final class Bot {
     public static final ExecutorService ASYNC_POOL = new ThreadPoolExecutor(
@@ -88,7 +87,7 @@ public final class Bot {
     private static final Iterator<Supplier<String>> status = Iterators.cycle(
             () -> "Roses are red Niggers are dead",
             () -> "IQ = 0;",
-            () -> String.format(NEW_YEAR, TemporalDuration.of(1, 1, 0,0))
+            UtilsCommands::getNewYear
     );
 
     private Bot() {}
@@ -107,31 +106,36 @@ public final class Bot {
         for (;;) {
             scheduler.mainThreadHeartbeat();
             CompletableFuture<GetLongPollEventsResponse> cfE;
-            if ((cfE = cf.get()) == null || cfE.isDone()) {//Дабы не нацеплять на один ивент 10000 одинаковых действиq
-                cf.set(vkApiClient.longPoll().getEvents(
-                        longPollServer.getServer(),
-                        longPollServer.getKey(),
-                        lastTimeStamp.get()
-                ).waitTime(25).execute().whenComplete((e, throwable) -> {
-                    if (throwable != null) {
-                        System.out.println(throwable);
-                        try {
-                            longPollServer = getLongPollServer().get();
-                        } catch (InterruptedException | ExecutionException ex) {
-                            ex.printStackTrace();
-                        }
-                    } else {
-                        for (JsonObject jsonObject : e.getUpdates()) {
+            //Дабы не нацеплять на один ивент 10000 одинаковых действиq
+            if ((cfE = cf.get()) != null) {
+                if (cfE.isDone()) {
+                    try {
+                        GetLongPollEventsResponse response = cfE.get();//не блокируюсь, т к CF is Done
+                        for (JsonObject jsonObject : response.getUpdates()) {
                             handler.parse(jsonObject);
                         }
-                        lastTimeStamp.set(e.getTs());
+                        lastTimeStamp.set(response.getTs());
+                    } catch (InterruptedException | ExecutionException e) {
+                        try {
+                            longPollServer = getLongPollServer().get();
+                        } catch (InterruptedException | ExecutionException ex) { break; }
                     }
-                }));
+                    setNewEvents();
+                }
+            } else {
+                setNewEvents();
             }
             try {
                 Thread.sleep(80);
             } catch (InterruptedException e) { break; }
         }
+    }
+    public static void setNewEvents() {
+        cf.set(vkApiClient.longPoll().getEvents(
+                longPollServer.getServer(),
+                longPollServer.getKey(),
+                lastTimeStamp.get()
+        ).waitTime(25).execute());
     }
     private static CompletableFuture<LongPollServer> getLongPollServer() {
         return groupActor != null

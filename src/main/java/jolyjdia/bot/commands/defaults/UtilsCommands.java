@@ -1,5 +1,6 @@
 package jolyjdia.bot.commands.defaults;
 
+import com.sun.management.OperatingSystemMXBean;
 import jolyjdia.bot.commands.CommandLabel;
 import jolyjdia.bot.commands.ConsumerCommand;
 import jolyjdia.bot.utils.timeformat.TemporalDuration;
@@ -8,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -15,19 +17,41 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 public class UtilsCommands extends ConsumerCommand {
-    public static final String NEW_YEAR = "\uD83D\uDD25\uD83E\uDD76Новый Год через: %s\uD83E\uDD76\uD83D\uDD25";
+    private static final OperatingSystemMXBean BEAN = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
 
     @CommandLabel(alias = {"нг", "весна", "лето"})
     public void happy() {
         if (args.length == 1) {
             if(args[0].equalsIgnoreCase("нг")) {
-                sender.sendMessage(String.format(NEW_YEAR, TemporalDuration.of(1, 1, 0,0)));
+                sender.sendMessage(getNewYear());
             } else if(args[0].equalsIgnoreCase("весна")) {
                 sender.sendMessage(TemporalDuration.of(3, 1, 0, 0).toFormat());
             } else if(args[0].equalsIgnoreCase("лето")) {
                 sender.sendMessage(TemporalDuration.of(6, 1, 0, 0).toFormat());
             }
         }
+    }
+    public static String getNewYear() {
+        return "\uD83D\uDE44Новый Год через: "+TemporalDuration.of(1, 1, 0,0)+"\uD83D\uDE44";
+    }
+    @CommandLabel(alias = {"memory", "lag"}, permission = "shallwe.lag")
+    public void lag() {
+        Runtime runtime = Runtime.getRuntime();
+        long totalMemory = runtime.totalMemory();
+        long freeMemory = runtime.freeMemory();
+
+        sender.sendMessage("\nJava version: " + Runtime.version() +
+                "\nПамять:" +
+                "\n Max: " + runtime.maxMemory() / 1048576L + " МB" +
+                "\n Total: " + totalMemory / 1048576L + " МB" +
+                "\n Use: " + (totalMemory - freeMemory) / 1048576L + " МB" +
+                " (" + freeMemory / 1048576L + " MB свободно)" +
+                "\nПроцессы:" +
+                "\n Ядер: " + runtime.availableProcessors() +
+                "\n Использовано сервером: " + Math.round(BEAN.getProcessCpuLoad() * 100) + '%' +
+                "\n Использовано системой: " + Math.round(BEAN.getCpuLoad() * 100) + '%' +
+                "\n Активные потоки: " + Thread.activeCount() +
+                "\n ");
     }
     private static final String KEY = "";
             //"https://translate.yandex.net/api/v1.5/tr.json/translate?key="+ Bot.getConfig().getProperty("translateKey");
