@@ -3,23 +3,37 @@ package jolyjdia.bot.utils.timeformat;
 import java.time.Duration;
 
 public enum TimeFormatter {
-    DAYS(Duration::toDays, " дней ", " день ", " дня "),
-    HOURS(duration -> duration.toHours() % 24, " часов ", " час ", " часа "),
-    MINUTES(duration -> duration.toMinutes() % 60, " минут ", " минута ", " минуты "),
-    SECONDS(duration -> duration.toSeconds() % 60, " секунд ", " секунда ", " секунды ");
+    DAYS("дней", "день", "дня") {
+        @Override
+        public int to(Duration d) {
+            return (int)d.toDaysPart();
+        }
+    },
+    HOURS("часов", "час", "часа") {
+        @Override
+        public int to(Duration d) {
+            return d.toHoursPart();
+        }
+    },
+    MINUTES("минут", "минута", "минуты") {
+        @Override
+        public int to(Duration d) {
+            return d.toMinutesPart();
+        }
+    },
+    SECONDS("секунд", "секунда", "секунды") {
+        @Override
+        public int to(Duration d) {
+            return d.toSecondsPart();
+        }
+    };
 
-    private final CallableDuration callable;
     private final String plural, singular, other;
 
-    TimeFormatter(CallableDuration callable, String plural, String singular, String other) {
-        this.callable = callable;
+    TimeFormatter(String plural, String singular, String other) {
         this.plural = plural;
         this.singular = singular;
         this.other = other;
-    }
-
-    public CallableDuration getCallable() {
-        return callable;
     }
 
     public String getPlural() {
@@ -33,4 +47,5 @@ public enum TimeFormatter {
     public String getOther() {
         return other;
     }
+    public abstract int to(Duration d);
 }

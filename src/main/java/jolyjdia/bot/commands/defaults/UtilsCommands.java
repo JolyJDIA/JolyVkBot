@@ -32,7 +32,7 @@ public class UtilsCommands extends ConsumerCommand {
         }
     }
     public static String getNewYear() {
-        return "\uD83D\uDE44Новый Год через: "+TemporalDuration.of(1, 1, 0,0)+"\uD83D\uDE44";
+        return "\uD83D\uDE44Новый Год осталось: "+TemporalDuration.of(1, 1, 0,0)+"\uD83D\uDE44";
     }
     @CommandLabel(alias = {"memory", "lag"}, permission = "shallwe.lag")
     public void lag() {

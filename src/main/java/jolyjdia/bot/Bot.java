@@ -7,6 +7,8 @@ import jolyjdia.bot.commands.defaults.UtilsCommands;
 import jolyjdia.bot.manager.UserManager;
 import jolyjdia.bot.scheduler.BotScheduler;
 import jolyjdia.bot.utils.MyHttpClient;
+import jolyjdia.bot.utils.timeformat.TemporalDuration;
+import jolyjdia.bot.utils.timeformat.TimeFormatter;
 import jolyjdia.vk.sdk.actors.GroupActor;
 import jolyjdia.vk.sdk.actors.UserActor;
 import jolyjdia.vk.sdk.client.TransportClient;
@@ -18,6 +20,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
+import java.time.LocalTime;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.*;
@@ -85,8 +89,11 @@ public final class Bot {
     private static final AtomicInteger lastTimeStamp = new AtomicInteger();
     private static final AtomicReference<CompletableFuture<GetLongPollEventsResponse>> cf = new AtomicReference<>();
     private static final Iterator<Supplier<String>> status = Iterators.cycle(
+            () -> "Время: "+ new TemporalDuration(Duration.ofSeconds(LocalTime.now().toSecondOfDay()))
+                    .toFormat(TimeFormatter.HOURS, TimeFormatter.MINUTES, TimeFormatter.SECONDS),
             () -> "Roses are red Niggers are dead",
             () -> "IQ = 0;",
+            () -> "Манки дай",
             UtilsCommands::getNewYear
     );
 

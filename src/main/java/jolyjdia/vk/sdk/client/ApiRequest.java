@@ -52,10 +52,14 @@ public abstract class ApiRequest<T> {
 
     public CompletableFuture<String> executeAsString() {
         return client.post(url, getBody()).thenApply(r -> {
-            if (r.getStatusCode() != 200) {
-                throw new ClientException("Internal API server error. Wrong status code: " + r.getStatusCode() + ". Content: " + r.getContent());
+            int code; String body = r.body();
+            if ((code = r.statusCode()) != 200) {
+                throw new ClientException("Internal API server error. Wrong status code: " + code + ". Content: " + body);
             }
-            return r.getContent();
+            if (!r.headers().map().containsKey("content-type")) {
+                throw new ClientException("No content type header");
+            }
+            return body;
         });
     }
 

@@ -27,10 +27,7 @@ public class CitiesCommands extends ConsumerCommand implements Listener {
         }
     }
     //private char lastLetter;
-    private static final int SKIP =
-            1 << 'ь' |
-            1 << 'ъ' |
-            1 << 'ы' ;
+    private static final int SKIP = 1 << 'ь' | 1 << 'ъ' | 1 << 'ы' ;
     private final Map<Integer, User> users = new HashMap<>();
 
     public static CitiesCommands register() {
@@ -62,7 +59,7 @@ public class CitiesCommands extends ConsumerCommand implements Listener {
     @SuppressWarnings("uncheked")
     private static class MapTypeToken extends TypeToken<Map<Character, List<String>>> {}
 
-    private final class User {
+    private static final class User {
         private char lastLetterU;
         private final Map<Character, List<String>> mapPrivate = new HashMap<>(map);
 
