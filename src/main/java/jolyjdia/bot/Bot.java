@@ -121,7 +121,7 @@ public final class Bot {
                 cf = vkApiClient.longPoll().getEvents(server.getServer(), server.getKey(), lts).waitTime(25).execute();
             }
             try {
-                Thread.sleep(80);
+                Thread.sleep(50);
             } catch (InterruptedException e) { break; }
         }
     }
