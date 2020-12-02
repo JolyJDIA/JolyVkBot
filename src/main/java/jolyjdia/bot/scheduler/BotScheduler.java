@@ -12,13 +12,23 @@ import static jolyjdia.bot.Bot.ASYNC_POOL;
 public class BotScheduler {
     private static final AtomicInteger ids = new AtomicInteger();
     private final RoflanBlockingQueue taskQueue = new RoflanBlockingQueue();
+    private static final int SAMPLE_INTERVAL = 100;
+    public final double[] recentTps = {20, 20, 20};
+    long tickSection = System.currentTimeMillis();
 
     public void mainThreadHeartbeat() {
+        long now = System.currentTimeMillis();
+        if (now % SAMPLE_INTERVAL == 0) {
+            double currentTps = 1E3 / (now - tickSection) * SAMPLE_INTERVAL;
+            recentTps[0] = calcTps(recentTps[0], 0.92, currentTps); // 1/exp(5sec/1min)
+            recentTps[1] = calcTps(recentTps[1], 0.9835, currentTps); // 1/exp(5sec/5min)
+            recentTps[2] = calcTps(recentTps[2], 0.9945, currentTps); // 1/exp(5sec/15min)
+            tickSection = now;
+        }
         Task task;
         if ((task = taskQueue.peek()) == null) {
             return;
         }
-        long now = System.currentTimeMillis();
         if (now >= task.getNextRun()) {
             if (task.isAsync()) {
                 ASYNC_POOL.execute(task);
@@ -85,5 +95,8 @@ public class BotScheduler {
         task.setNextRun(System.currentTimeMillis() + delay);
         taskQueue.add(task);
         return task;
+    }
+    private static double calcTps(double avg, double exp, double tps) {
+        return (avg * exp) + (tps * (1 - exp));
     }
 }

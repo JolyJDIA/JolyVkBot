@@ -22,12 +22,12 @@ public class WeatherCommands extends ConsumerCommand {
     public void weather() {
         if (weather == null || (System.currentTimeMillis() - start) < TimeUnit.MILLISECONDS.toDays(1)) {
             System.out.println("new");
+            start = System.currentTimeMillis();
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .GET()
                     .build();
             Bot.getHttpClient().get(request).thenAccept(e -> {
-                start = System.currentTimeMillis();
                 Test test = StringBind.fromJson(e.body(), Test.class);
                 DailyForecasts df = test.dailyForecasts[0];
                 int min = df.getTemperature().getMinimum().getValue();
