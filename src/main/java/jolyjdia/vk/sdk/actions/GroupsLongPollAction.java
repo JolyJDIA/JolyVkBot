@@ -14,7 +14,7 @@ public class GroupsLongPollAction extends AbstractAction {
         return new GroupsGetLongPollServerQuery(client, actor, groupId);
     }
 
-    public GroupsGetLongPollServerQuery getLongPollServer(GroupActor actor, int groupId) {
+    public GroupsGetLongPollServerQuery getLongPollServer(GroupActor actor) {
         return new GroupsGetLongPollServerQuery(client, actor);
     }
 

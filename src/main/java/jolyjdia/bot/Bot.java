@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -41,16 +40,16 @@ public final class Bot {
                 @Override
                 public Thread newThread(@NotNull Runnable r) {
                     @NonNls Thread thread = new Thread(r);
-                    thread.setName("Bot-Worker-" + count.getAndIncrement());
+                    thread.setName("Nigga-Worker-" + count.getAndIncrement());
                     return thread;
                 }
             });
+    private static final TransportClient httpClient = new MyHttpClient();
     private static final BotScheduler scheduler = new BotScheduler();
-    private static final TransportClient transportClient = new MyHttpClient();
-    private static final VkApiClient vkApiClient = new VkApiClient(transportClient);
+    private static final VkApiClient vkApiClient = new VkApiClient(httpClient);
+    private static final Properties properties = new Properties();
     private static final BotManager manager = new BotManager();
     private static final UserManager userManager = new UserManager();
-    private static final Properties properties = new Properties();
     private static final int groupId;
     private static final String accessToken;
     private static final GroupActor groupActor;
@@ -77,20 +76,9 @@ public final class Bot {
         CitiesCommands.register();
     }
 
-    private static LongPollServer longPollServer;//volatile
-
-    static {
-        try {
-            longPollServer = getLongPollServer().get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-    }
-    private static final AtomicInteger lastTimeStamp = new AtomicInteger();
-    private static final AtomicReference<CompletableFuture<GetLongPollEventsResponse>> cf = new AtomicReference<>();
     private static final Iterator<Supplier<String>> status = Iterators.cycle(
             () -> "Время: "+ new TemporalDuration(Duration.ofSeconds(LocalTime.now().toSecondOfDay()))
-                    .toFormat(TimeFormatter.HOURS, TimeFormatter.MINUTES, TimeFormatter.SECONDS),
+                    .toFormat(TimeFormatter.HOURS, TimeFormatter.MINUTES),
             () -> "Roses are red Niggers are dead",
             () -> "IQ = 0;",
             () -> "Манки дай",
@@ -99,7 +87,7 @@ public final class Bot {
 
     private Bot() {}
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
         CallbackApiLongPollHandler handler = new CallbackApiLongPollHandler();
         scheduler.runRepeatingSyncTaskAfter(() -> {
             String text = status.next().get();
@@ -108,45 +96,38 @@ public final class Bot {
                     .text(text)
                     .execute();
         }, 0, 1, TimeUnit.MINUTES);
-        lastTimeStamp.set(Integer.parseInt(longPollServer.getTs()));
+        CompletableFuture<GetLongPollEventsResponse> cf = null;
+        LongPollServer server = getLongPollServer().get();
+        int lts = Integer.parseInt(server.getTs());
         System.out.println("start");
         for (;;) {
             scheduler.mainThreadHeartbeat();
-            CompletableFuture<GetLongPollEventsResponse> cfE;
-            //Дабы не нацеплять на один ивент 10000 одинаковых действиq
-            if ((cfE = cf.get()) != null) {
-                if (cfE.isDone()) {
+            if (cf != null) {//Дабы не нацеплять на один ивент 10000 одинаковых действиq
+                if (cf.isDone()) {
                     try {
-                        GetLongPollEventsResponse response = cfE.get();//не блокируюсь, т к CF is Done
+                        GetLongPollEventsResponse response = cf.get();//не блокируюсь, т к CF is Done
                         for (JsonObject jsonObject : response.getUpdates()) {
                             handler.parse(jsonObject);
                         }
-                        lastTimeStamp.set(response.getTs());
+                        lts = response.getTs();
                     } catch (InterruptedException | ExecutionException e) {
                         try {
-                            longPollServer = getLongPollServer().get();
+                            server = getLongPollServer().get();
                         } catch (InterruptedException | ExecutionException ex) { break; }
                     }
-                    setNewEvents();
+                    cf = vkApiClient.longPoll().getEvents(server.getServer(), server.getKey(), lts).waitTime(25).execute();
                 }
             } else {
-                setNewEvents();
+                cf = vkApiClient.longPoll().getEvents(server.getServer(), server.getKey(), lts).waitTime(25).execute();
             }
             try {
                 Thread.sleep(80);
             } catch (InterruptedException e) { break; }
         }
     }
-    public static void setNewEvents() {
-        cf.set(vkApiClient.longPoll().getEvents(
-                longPollServer.getServer(),
-                longPollServer.getKey(),
-                lastTimeStamp.get()
-        ).waitTime(25).execute());
-    }
     private static CompletableFuture<LongPollServer> getLongPollServer() {
         return groupActor != null
-                ? vkApiClient.groupsLongPoll().getLongPollServer(groupActor, groupActor.getGroupId()).execute()
+                ? vkApiClient.groupsLongPoll().getLongPollServer(groupActor).execute()
                 : vkApiClient.groupsLongPoll().getLongPollServer(userActor, groupId).execute();
 
     }
@@ -185,5 +166,9 @@ public final class Bot {
 
     public static UserManager getUserManager() {
         return userManager;
+    }
+
+    public static TransportClient getHttpClient() {
+        return httpClient;
     }
 }

@@ -12,7 +12,6 @@ public final class TemporalDuration {
             TimeFormatter.DAYS,
             TimeFormatter.HOURS,
             TimeFormatter.MINUTES,
-            TimeFormatter.SECONDS
     };
 
     private Duration duration;

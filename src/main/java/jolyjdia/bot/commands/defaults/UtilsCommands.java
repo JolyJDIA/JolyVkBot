@@ -5,16 +5,7 @@ import jolyjdia.bot.commands.CommandLabel;
 import jolyjdia.bot.commands.ConsumerCommand;
 import jolyjdia.bot.utils.timeformat.TemporalDuration;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.management.ManagementFactory;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 public class UtilsCommands extends ConsumerCommand {
     private static final OperatingSystemMXBean BEAN = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
@@ -32,7 +23,7 @@ public class UtilsCommands extends ConsumerCommand {
         }
     }
     public static String getNewYear() {
-        return "\uD83D\uDE44Новый Год осталось: "+TemporalDuration.of(1, 1, 0,0)+"\uD83D\uDE44";
+        return "\uD83D\uDE44До Нового года осталось: "+TemporalDuration.of(1, 1, 0,0)+"\uD83D\uDE44";
     }
     @CommandLabel(alias = {"memory", "lag"}, permission = "shallwe.lag")
     public void lag() {
@@ -52,38 +43,5 @@ public class UtilsCommands extends ConsumerCommand {
                 "\n Использовано системой: " + Math.round(BEAN.getCpuLoad() * 100) + '%' +
                 "\n Активные потоки: " + Thread.activeCount() +
                 "\n ");
-    }
-    private static final String KEY = "";
-            //"https://translate.yandex.net/api/v1.5/tr.json/translate?key="+ Bot.getConfig().getProperty("translateKey");
-
-    private static URL url;
-    static {
-        try {
-            url = new URL(KEY);
-        } catch (MalformedURLException e) {
-            url = null;
-        }
-    }
-    public static String translate(String lang, String input) throws IOException {
-        StringBuilder builder = new StringBuilder();
-        if(url == null) {
-            return "URL Error";
-        }
-        URLConnection connection = url.openConnection();
-        connection.setDoOutput(true);
-        try (DataOutputStream dataOutputStream = new DataOutputStream(connection.getOutputStream())) {
-            dataOutputStream.writeBytes("text=" + URLEncoder.encode(input, StandardCharsets.UTF_8) + "&lang=" + lang);
-            try (InputStream response = connection.getInputStream(); ByteArrayOutputStream result = new ByteArrayOutputStream()) {
-                byte[] buffer = new byte[1024];
-                int length;
-                while ((length = response.read(buffer)) != -1) {
-                    result.write(buffer, 0, length);
-                }
-                String json = result.toString(StandardCharsets.UTF_8);//StandardCharsets.UTF_8
-                builder.append(json, json.indexOf('[') + 2, json.indexOf(']') - 1);
-
-            }
-        }
-        return builder.toString();
     }
 }

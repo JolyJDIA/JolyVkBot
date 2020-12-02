@@ -1,6 +1,5 @@
 package jolyjdia.bot.utils;
 
-
 import java.util.concurrent.ThreadLocalRandom;
 
 public final class MathUtils {

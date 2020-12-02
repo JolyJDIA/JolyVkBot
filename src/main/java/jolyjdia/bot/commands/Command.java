@@ -6,12 +6,12 @@ import java.util.Objects;
 import java.util.Set;
 
 public abstract class Command {
-    private final String name;
-    private String description;
-    private String arguments;
-    private Set<String> alias;
-    private String permission;
-    private String noPermissionMessage;
+    protected final String name;
+    protected String description;
+    protected String arguments;
+    protected Set<String> alias;
+    protected String permission;
+    protected String noPermissionMessage;
 
     protected Command(String name) {
         this.name = name;

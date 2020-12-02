@@ -5,7 +5,6 @@ import jolyjdia.vk.sdk.actors.UserActor;
 import jolyjdia.vk.sdk.client.VkApiClient;
 import jolyjdia.vk.sdk.queries.messages.MessagesSendQuery;
 
-
 public class MessagesAction extends AbstractAction {
 
     public MessagesAction(VkApiClient client) {

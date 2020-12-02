@@ -50,39 +50,31 @@ public class CallbackApi {
     private static final String CALLBACK_EVENT_USER_BLOCK = "user_block";
     private static final String CALLBACK_EVENT_USER_UNBLOCK = "user_unblock";
     private static final String CALLBACK_EVENT_CONFIRMATION = "confirmation";
-    private static final Map<String, Type> CALLBACK_TYPES;
+    private static final Map<String, Type> CALLBACK_TYPES = Map.ofEntries(
+            Map.entry(CALLBACK_EVENT_MESSAGE_NEW, new TypeToken<CallbackMessage<NewMessage>>(){}.getType()),
+            Map.entry(CALLBACK_EVENT_MESSAGE_REPLY, new TypeToken<CallbackMessage<Message>>(){}.getType()),
+            Map.entry(CALLBACK_EVENT_MESSAGE_EDIT, new TypeToken<CallbackMessage<Message>>(){}.getType())
+    );
 
-    static {
-
-        CALLBACK_TYPES = Map.ofEntries(
-                Map.entry(CALLBACK_EVENT_MESSAGE_NEW, new TypeToken<CallbackMessage<NewMessage>>(){}.getType()),
-                Map.entry(CALLBACK_EVENT_MESSAGE_REPLY, new TypeToken<CallbackMessage<Message>>(){}.getType()),
-                Map.entry(CALLBACK_EVENT_MESSAGE_EDIT, new TypeToken<CallbackMessage<Message>>(){}.getType()));
-    }
-
-    public void messageNew(Integer groupId, Message message) {
-    }
+    public void messageNew(Integer groupId, Message message) {}
 
     public void messageNew(Integer groupId, String secret, Message message) {
         messageNew(groupId, message);
     }
 
-    public void messageReply(Integer groupId, Message message) {
-    }
+    public void messageReply(Integer groupId, Message message) { }
 
     public void messageReply(Integer groupId, String secret, Message message) {
         messageReply(groupId, message);
     }
 
-    public void messageEdit(Integer groupId, Message message) {
-    }
+    public void messageEdit(Integer groupId, Message message) {}
 
     public void messageEdit(Integer groupId, String secret, Message message) {
         messageEdit(groupId, message);
     }
 
-    public void confirmation(Integer groupId) {
-    }
+    public void confirmation(Integer groupId) {}
 
     public void confirmation(Integer groupId, String secret) {
         confirmation(groupId);

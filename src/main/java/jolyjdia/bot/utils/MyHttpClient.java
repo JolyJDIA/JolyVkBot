@@ -25,6 +25,12 @@ public class MyHttpClient implements TransportClient {
     public CompletableFuture<HttpResponse<String>> get(String url) {
         return get(url, FORM_CONTENT_TYPE);
     }
+
+    @Override
+    public CompletableFuture<HttpResponse<String>> get(HttpRequest request) {
+        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+    }
+
     @Override
     public CompletableFuture<HttpResponse<String>> get(String url, String contentType) {
         HttpRequest request = HttpRequest.newBuilder()
@@ -33,7 +39,7 @@ public class MyHttpClient implements TransportClient {
                 .header("Content-Type", contentType)
                 .GET()
                 .build();
-        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+        return get(request);
     }
 
     @Override
@@ -55,8 +61,6 @@ public class MyHttpClient implements TransportClient {
     public CompletableFuture<HttpResponse<String>> post(String url, String fileName, File file) {
         return null;
     }
-
-
 
     @Override
     public CompletableFuture<HttpResponse<String>> post(String url) {
@@ -82,5 +86,9 @@ public class MyHttpClient implements TransportClient {
                 .DELETE()
                 .build();
         return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    public HttpClient getHttpClient() {
+        return httpClient;
     }
 }

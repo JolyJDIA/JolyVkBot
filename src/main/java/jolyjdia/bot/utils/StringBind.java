@@ -9,7 +9,7 @@ import jolyjdia.vk.sdk.objects.enums.EnumParam;
 import java.io.Reader;
 import java.lang.reflect.Type;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.Objects;
 import java.util.StringJoiner;
 
 public final class StringBind {
@@ -17,65 +17,41 @@ public final class StringBind {
 
     private StringBind() {}
 
-    public static String toArray(Collection<?> collection) {
-        Iterator<?> it = collection.iterator();
-        if (!it.hasNext()) {
-            return "";
+    public static String toArray(Collection<?> elements) {
+        Objects.requireNonNull(elements);
+        StringJoiner joiner = new StringJoiner(",");
+        for (Object o : elements) {
+            joiner.add(o.toString());
         }
-        StringBuilder sb = new StringBuilder();
-        for (; ; ) {
-            sb.append(it.next());
-            if (!it.hasNext()) {
-                return sb.toString();
-            }
-            sb.append(',');
-        }
+        return joiner.toString();
     }
 
     @SafeVarargs
-    public static <U> String toArray(U... element) {
-        int iMax = element.length - 1;
-        if (iMax == -1) {
-            return "";
+    public static <U> String toArray(U... elements) {
+        Objects.requireNonNull(elements);
+        StringJoiner joiner = new StringJoiner(",");
+        for (U u : elements) {
+            joiner.add(u.toString());
         }
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; ; ++i) {
-            builder.append(element[i]);
-            if (i == iMax) {
-                return builder.toString();
-            }
-            builder.append(',');
-        }
+        return joiner.toString();
     }
 
-    public static String toArrayEnum(EnumParam... fields) {
-        int iMax = fields.length - 1;
-        if (iMax == -1) {
-            return "";
+    public static String toArrayEnum(EnumParam... elements) {
+        Objects.requireNonNull(elements);
+        StringJoiner joiner = new StringJoiner(",");
+        for (EnumParam ep : elements) {
+            joiner.add(ep.getValue());
         }
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; ; ++i) {
-            builder.append(fields[i].getValue());
-            if (i == iMax) {
-                return builder.toString();
-            }
-            builder.append(',');
-        }
+        return joiner.toString();
     }
 
-    public static String toArrayEnum(Collection<EnumParam> collection) {
-        Iterator<EnumParam> it = collection.iterator();
-        if (!it.hasNext()) {
-            return "";
+    public static String toArrayEnum(Collection<EnumParam> elements) {
+        Objects.requireNonNull(elements);
+        StringJoiner joiner = new StringJoiner(",");
+        for (EnumParam ep : elements) {
+            joiner.add(ep.getValue());
         }
-        StringBuilder sb = new StringBuilder();
-        for (;;) {
-            sb.append(it.next().getValue());
-            if (!it.hasNext()) {
-                return sb.toString();
-            }
-            sb.append(',');
-        }
+        return joiner.toString();
     }
     public static void log(String msg) {
         try {
@@ -84,14 +60,11 @@ public final class StringBind {
             e.printStackTrace();
         }
     }
-    public static String bind(int start, String[] a) {
-        int iMax = a.length;
-        if (iMax == 0) {
-            return "";
-        }
+    public static String bind(int start, String[] elements) {
+        Objects.requireNonNull(elements);
         StringJoiner joiner = new StringJoiner(" ");
-        for (int i = start; i < iMax; ++i) {
-            joiner.add(a[i]);
+        for (int i = start; i < elements.length-1; ++i) {
+            joiner.add(elements[i]);
         }
         return joiner.toString();
     }

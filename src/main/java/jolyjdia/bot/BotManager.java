@@ -4,25 +4,24 @@ import jolyjdia.bot.commands.Command;
 import jolyjdia.bot.commands.CommandLabel;
 import jolyjdia.bot.commands.ConsumerCommand;
 import jolyjdia.bot.commands.defaults.UtilsCommands;
+import jolyjdia.bot.commands.defaults.WeatherCommands;
 import jolyjdia.bot.events.*;
 import jolyjdia.bot.objects.User;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Consumer;
 
 public final class BotManager {
-    private final Set<HandlerEvent> listeners = new TreeSet<>(new Comparator<HandlerEvent>() {
-        @Override
-        public int compare(HandlerEvent o1, HandlerEvent o2) {
-            return o2.compareTo(o1.priority);
-        }
-    });
+    private final Set<HandlerEvent> listeners = new TreeSet<>((o1, o2) -> o2.compareTo(o1.priority));
     private final Set<HandlerCommand> commands = new HashSet<>();
 
     public BotManager() {
         registerCommand(new UtilsCommands());
+        registerCommand(new WeatherCommands());
     }
 
     public void registerEvent(Listener listener) {
@@ -122,13 +121,13 @@ public final class BotManager {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            HandlerEvent handler = (HandlerEvent) o;
-            return Objects.equals(consumer, handler.consumer);
+            HandlerEvent that = (HandlerEvent) o;
+            return consumer == that.consumer;
         }
 
         @Override
         public int hashCode() {
-            return consumer != null ? consumer.hashCode() : 0;
+            return consumer.hashCode();
         }
     }
     public static class HandlerCommand extends Command {
@@ -157,6 +156,20 @@ public final class BotManager {
                     }
                 }
             }
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+            HandlerCommand that = (HandlerCommand) o;
+            return consumer == that.consumer;
+        }
+
+        @Override
+        public int hashCode() {
+            return consumer.hashCode();
         }
     }
 }
