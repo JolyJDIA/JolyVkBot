@@ -1,5 +1,7 @@
 package jolyjdia.bot.calc;
 
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Stack;
 
 public final class CalcProcessor {
@@ -8,7 +10,7 @@ public final class CalcProcessor {
 
     public static void solve(String expression) {
         CalcTokenizer tokenizer = new CalcTokenizer(expression);
-        Stack<Token> stack = new Stack<>();
+        Queue<Token> stack = new PriorityQueue<>();
         while (tokenizer.hasNext()) {
             String s = tokenizer.nextToken();
             int len = s.length(); char c;
