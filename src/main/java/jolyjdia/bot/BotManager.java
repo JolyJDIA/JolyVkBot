@@ -147,7 +147,8 @@ public final class BotManager {
         @Override
         public void execute(User sender, String[] args) {
             if(hasPermission(sender)) {
-                if ((args.length >= minArg && args.length <= maxArg) || maxArg == -1) {
+                int lenArg = args.length;
+                if ((lenArg > minArg && (maxArg == -1 || lenArg-1 <= maxArg))) {//todo:
                     consumer.accept(sender, args);
                     runnable.run();
                 } else {

@@ -106,7 +106,7 @@ public class RoflanBlockingQueue {
     public void remove(Task task) {
         lock.lock();
         try {
-            int i = task.getHeapIndex();
+            int i = task.heapIndex;
             if (i < 0) {
                 return;
             }
@@ -144,7 +144,7 @@ public class RoflanBlockingQueue {
     public boolean contains(Task x) {
         lock.lock();
         try {
-            return x.getHeapIndex() != -1;
+            return x.heapIndex != -1;
         } finally {
             lock.unlock();
         }

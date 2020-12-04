@@ -29,7 +29,7 @@ public class BotScheduler {
         if ((task = taskQueue.peek()) == null) {
             return;
         }
-        if (now >= task.getNextRun()) {
+        if (now >= task.nextRun) {
             if (task.isAsync()) {
                 ASYNC_POOL.execute(task);
             } else {
@@ -40,7 +40,7 @@ public class BotScheduler {
                 System.out.println((task.isAsync() ? "Async" : "Sync") + "Scheduler: task deleted (" + task.getUid() + ')');
                 return;
             }
-            taskQueue.setNexRun(now + task.getPeriod());
+            taskQueue.setNexRun(now + task.period);
         }
     }
 

@@ -4,13 +4,17 @@ import com.sun.management.OperatingSystemMXBean;
 import jolyjdia.bot.Bot;
 import jolyjdia.bot.commands.CommandLabel;
 import jolyjdia.bot.commands.ConsumerCommand;
+import jolyjdia.bot.scheduler.Task;
 import jolyjdia.bot.utils.timeformat.TemporalDuration;
 
 import java.lang.management.ManagementFactory;
+import java.text.DecimalFormat;
 import java.util.StringJoiner;
+import java.util.concurrent.TimeUnit;
 
 public class UtilsCommands extends ConsumerCommand {
     private static final OperatingSystemMXBean BEAN = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
+    private static final DecimalFormat format = new DecimalFormat("#0.00");
 
     @CommandLabel(alias = {"нг", "весна", "лето"})
     public void happy() {
@@ -33,14 +37,14 @@ public class UtilsCommands extends ConsumerCommand {
         long totalMemory = runtime.totalMemory();
         long freeMemory = runtime.freeMemory();
 
-        StringJoiner joiner = new StringJoiner(", ");
+        StringJoiner joiner = new StringJoiner(" ");
         for (double u : Bot.getScheduler().recentTps) {
-            joiner.add(format(u));
+            joiner.add(format.format(u));
         }
         sender.sendMessage("\nJava version: " + Runtime.version() +
                 "\nTPS from last:" +
-                "\n1m / 5m / 15m:" +
-                "\n"+ joiner.toString() +
+                "\n->1min 5min 15min:" +
+                "\n->"+ joiner.toString() +
                 "\nПамять:" +
                 "\n->Max: " + runtime.maxMemory() / 1048576L + " МB" +
                 "\n->Total: " + totalMemory / 1048576L + " МB" +
@@ -53,11 +57,22 @@ public class UtilsCommands extends ConsumerCommand {
                 "\n->Активные потоки: " + Thread.activeCount() +
                 '\n');
     }
-    private String format(double tps) {
-        String s = String.valueOf(Math.min(Math.round( tps * 100.0 ) / 100.0, 20.0));
-        if (tps > 20.0) {
-            s += "*";
+    private Task raid;
+    @CommandLabel(alias = "raid", minArg = 1, usage = "<сообщение>", desc = "рейд")
+    public void raid() {
+        if (raid != null) {
+            sender.sendMessage("Рейд уже где-то идет");
         }
-        return s;
+        String arg = args[1] + ' ';
+        int copy = 1000 / arg.length();
+        final String msg = arg.repeat(copy);
+        long start = System.currentTimeMillis();
+        raid = Bot.getScheduler().runRepeatingSyncTaskAfter(() -> {
+            sender.sendMessage(msg);
+            if (System.currentTimeMillis() - start > TimeUnit.SECONDS.toMillis(20)) {
+                raid.cancel0();
+                raid = null;
+            }
+        }, 0, 200, TimeUnit.MILLISECONDS);
     }
 }

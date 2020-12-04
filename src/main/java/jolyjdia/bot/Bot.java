@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -106,10 +107,13 @@ public final class Bot {
                 if (cf.isDone()) {
                     try {
                         GetLongPollEventsResponse response = cf.get();//не блокируюсь, т к CF is Done
-                        for (JsonObject jsonObject : response.getUpdates()) {
-                            handler.parse(jsonObject);
+                        List<JsonObject> updates; Integer ts;
+                        if ((updates = response.getUpdates()) != null && (ts = response.getTs()) != null) {
+                            for (JsonObject jsonObject : updates) {
+                                handler.parse(jsonObject);
+                            }
+                            lts = ts;
                         }
-                        lts = response.getTs();
                     } catch (InterruptedException | ExecutionException e) {
                         try {
                             server = getLongPollServer().get();
