@@ -49,6 +49,7 @@ public class Task implements Runnable, Comparable<Task> {
     public void setHeapIndex(int heapIndex) {
         this.heapIndex = heapIndex;
     }
+    @Deprecated
     public void cancel0() {
         this.period = NO_REPEATING;
     }
