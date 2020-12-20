@@ -11,13 +11,14 @@ import jolyjdia.bot.objects.User;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 
 public final class BotManager {
     private final Set<HandlerEvent> listeners = new TreeSet<>((o1, o2) -> o2.compareTo(o1.priority));
-    private final Set<HandlerCommand> commands = new HashSet<>();
+    private final Set<Command> commands = new HashSet<>();
 
     public BotManager() {
         registerCommand(new UtilsCommands());
@@ -25,7 +26,8 @@ public final class BotManager {
     }
 
     public void registerEvent(Listener listener) {
-        for (Method method : listener.getClass().getMethods()) {
+        Class<?> clazz = listener.getClass();
+        for (Method method : clazz.getMethods()) {
             if (!method.isAnnotationPresent(EventLabel.class)) {
                 continue;
             }
@@ -34,7 +36,7 @@ public final class BotManager {
                 continue;
             }
             EventLabel label = method.getAnnotation(EventLabel.class);
-            listeners.add(new HandlerEvent(event -> {
+            listeners.add(new HandlerEvent(clazz, event -> {
                 if (!event.getClass().isAssignableFrom(parameter)) {
                     return;
                 }
@@ -47,7 +49,8 @@ public final class BotManager {
         }
     }
     public void registerCommand(ConsumerCommand command) {
-        for (Method method : command.getClass().getMethods()) {
+        Class<?> clazz = command.getClass();//todo: проверять на зареганную
+        for (Method method : clazz.getMethods()) {
             if (!method.isAnnotationPresent(CommandLabel.class)) {
                 continue;
             }
@@ -55,7 +58,7 @@ public final class BotManager {
                 continue;
             }
             CommandLabel label = method.getAnnotation(CommandLabel.class);
-            HandlerCommand handler = new HandlerCommand(() -> {
+            HandlerCommand handler = new HandlerCommand(clazz, () -> {
                 try {
                     method.invoke(command);
                 } catch (IllegalAccessException | InvocationTargetException e) {
@@ -65,6 +68,9 @@ public final class BotManager {
             handler.setPermission(label.permission(), label.noPermissionMsg());
             commands.add(handler);
         }
+    }
+    public void registerCommand(Command command) {
+        commands.add(command);
     }
 
     public Set<HandlerEvent> getListeners() {
@@ -79,7 +85,7 @@ public final class BotManager {
         iterable.forEach(this::registerEvent);
     }
 
-    public Set<HandlerCommand> getRegisteredCommands() {
+    public Set<Command> getRegisteredCommands() {
         return commands;
     }
 
@@ -91,12 +97,14 @@ public final class BotManager {
         iterable.forEach(this::registerCommand);
     }
 
-    public static class HandlerEvent implements Comparable<EventPriority>, Consumer<Event> {
+    final static class HandlerEvent implements Comparable<EventPriority>, Consumer<Event> {
+        final Class<?> clazz;
         final Consumer<? super Event> consumer;
         final EventPriority priority;
         final boolean ignoreCancelled;
 
-        HandlerEvent(Consumer<? super Event> consumer, EventPriority priority, boolean ignoreCancelled) {
+        HandlerEvent(Class<?> clazz, Consumer<? super Event> consumer, EventPriority priority, boolean ignoreCancelled) {
+            this.clazz = clazz;
             this.consumer = consumer;
             this.priority = priority;
             this.ignoreCancelled = ignoreCancelled;
@@ -122,33 +130,34 @@ public final class BotManager {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             HandlerEvent that = (HandlerEvent) o;
-            return consumer == that.consumer;
+            return clazz == that.clazz;
         }
 
         @Override
         public int hashCode() {
-            return consumer.hashCode();
+            return clazz.hashCode();
         }
     }
-    public static class HandlerCommand extends Command {
+    final static class HandlerCommand extends Command {
+        private final Class<?> clazz;
         private final Runnable runnable;
         private final ConsumerCommand consumer;
         private final int minArg, maxArg;
 
-        HandlerCommand(Runnable runnable, ConsumerCommand consumer, String[] alias, String args, String desc, int minArg, int maxArg) {
-            super(alias[0], args, desc);
+        HandlerCommand(Class<?> clazz, Runnable runnable, ConsumerCommand consumer, String[] alias, String args, String desc, int minArg, int maxArg) {
+            super(args, desc, alias);
+            this.clazz = clazz;
             this.runnable = runnable;
             this.consumer = consumer;
             this.minArg = minArg;
             this.maxArg = maxArg;
-            setAlias(alias);
         }
 
         @Override
         public void execute(User sender, String[] args) {
             if(hasPermission(sender)) {
                 int lenArg = args.length;
-                if ((lenArg > minArg && (maxArg == -1 || lenArg-1 <= maxArg))) {//todo:
+                if((lenArg >= minArg && lenArg <= maxArg) || maxArg == -1) {
                     consumer.accept(sender, args);
                     runnable.run();
                 } else {
@@ -165,12 +174,12 @@ public final class BotManager {
             if (o == null || getClass() != o.getClass()) return false;
             if (!super.equals(o)) return false;
             HandlerCommand that = (HandlerCommand) o;
-            return consumer == that.consumer;
+            return clazz == that.clazz;
         }
 
         @Override
         public int hashCode() {
-            return consumer.hashCode();
+            return clazz.hashCode();
         }
     }
 }

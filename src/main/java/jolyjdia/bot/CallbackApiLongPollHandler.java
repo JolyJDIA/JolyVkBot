@@ -42,8 +42,11 @@ public class CallbackApiLongPollHandler extends CallbackApi {
             long start = System.currentTimeMillis();
             if(Bot.getBotManager().getRegisteredCommands().stream().noneMatch(cmd -> {
                 if(cmd.equalsCommand(args[0])) {
-                    cmd.execute(user, args);
-                    submitEvent(new BotSendCommandEvent(user, args));
+                    int len = args.length;
+                    String[] args0 = new String[len-1];
+                    System.arraycopy(args, 1, args0, 0, len - 1);
+                    cmd.execute(user, args0);
+                    submitEvent(new BotSendCommandEvent(user, args0));
                     return true;
                 }
                 return false;

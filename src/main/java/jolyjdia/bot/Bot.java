@@ -2,6 +2,7 @@ package jolyjdia.bot;
 
 import com.google.common.collect.Iterators;
 import com.google.gson.JsonObject;
+import jolyjdia.bot.commands.HelpCommands;
 import jolyjdia.bot.commands.defaults.CitiesCommands;
 import jolyjdia.bot.commands.defaults.UtilsCommands;
 import jolyjdia.bot.manager.UserManager;
@@ -49,7 +50,7 @@ public final class Bot {
     private static final BotScheduler scheduler = new BotScheduler();
     private static final VkApiClient vkApiClient = new VkApiClient(httpClient);
     private static final Properties properties = new Properties();
-    private static final BotManager manager = new BotManager();
+    private static final BotManager manager;
     private static final UserManager userManager = new UserManager();
     private static final int groupId;
     private static final String accessToken;
@@ -74,7 +75,9 @@ public final class Bot {
                 Integer.parseInt(properties.getProperty("userId")),
                 properties.getProperty("userAccessToken")
         );
+        manager = new BotManager();
         CitiesCommands.register();
+        manager.registerCommand(new HelpCommands());
     }
 
     private static final Iterator<Supplier<String>> status = Iterators.cycle(

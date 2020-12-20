@@ -7,6 +7,7 @@ import jolyjdia.bot.commands.ConsumerCommand;
 import jolyjdia.bot.events.EventLabel;
 import jolyjdia.bot.events.Listener;
 import jolyjdia.bot.events.messages.BotNewMessageEvent;
+import jolyjdia.bot.module.Module;
 import jolyjdia.bot.utils.MathUtils;
 import jolyjdia.bot.utils.StringBind;
 
@@ -15,7 +16,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-public class CitiesCommands extends ConsumerCommand implements Listener {
+public class CitiesCommands extends ConsumerCommand implements Listener, Module {
     private static final Map<Character, List<String>> map;
     static {
         try (InputStreamReader inputStreamReader = new InputStreamReader(
@@ -29,6 +30,13 @@ public class CitiesCommands extends ConsumerCommand implements Listener {
     //private char lastLetter;
     private static final int SKIP = 1 << 'ь' | 1 << 'ъ' | 1 << 'ы' ;
     private final Map<Integer, User> users = new HashMap<>();
+
+    @Override
+    public void onLoad() {
+        CitiesCommands citiesCommands = new CitiesCommands();
+        Bot.getBotManager().registerCommand(citiesCommands);
+        Bot.getBotManager().registerEvent(citiesCommands);
+    }
 
     public static CitiesCommands register() {
         CitiesCommands citiesCommands = new CitiesCommands();
@@ -48,11 +56,11 @@ public class CitiesCommands extends ConsumerCommand implements Listener {
             e.getUser().sendMessage(user.randCity());
         }
     }
-    @CommandLabel(alias = "города")
+    @CommandLabel(alias = "города", desc = "играть в города")
     public void addGameToChat() {
         sender.sendMessage(users.computeIfAbsent(sender.getPeerId(), integer -> new User()).randCity());
     }
-    @CommandLabel(alias = "стоп")
+    @CommandLabel(alias = "стоп-города", desc = "остановить игру")
     public void stop() {
         users.remove(sender.getPeerId());
     }

@@ -18,7 +18,7 @@ public class WeatherCommands extends ConsumerCommand {
     private static final String url = "http://dataservice.accuweather.com/forecasts/v1/daily/1day/323031?apikey="+apiKey+"&language=ru";
     private String weather; long start;
 
-    @CommandLabel(alias = {"погода", "weather"})
+    @CommandLabel(alias = {"погода", "weather"}, desc = "погода в Горловке")
     public void weather() {
         if (weather == null || (System.currentTimeMillis() - start) < TimeUnit.MILLISECONDS.toDays(1)) {
             System.out.println("new");
@@ -28,6 +28,7 @@ public class WeatherCommands extends ConsumerCommand {
                     .GET()
                     .build();
             Bot.getHttpClient().get(request).thenAccept(e -> {
+                System.out.println(e.body());
                 Test test = StringBind.fromJson(e.body(), Test.class);
                 DailyForecasts df = test.dailyForecasts[0];
                 int min = df.getTemperature().getMinimum().getValue();

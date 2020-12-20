@@ -1,29 +1,35 @@
 package jolyjdia.bot.commands;
 
+import jolyjdia.bot.Bot;
 import jolyjdia.bot.objects.User;
 
-import java.util.Objects;
-import java.util.Set;
+import java.util.Arrays;
 
 public abstract class Command {
-    protected final String name;
+    private static String helpCommand;//lazy
+    private final String name;
+    protected final String[] alias;
     protected String description;
     protected String arguments;
-    protected Set<String> alias;
     protected String permission;
     protected String noPermissionMessage;
 
-    protected Command(String name) {
-        this.name = name;
+
+    protected Command(String... alias) {
+        if (alias.length == 0) {
+            throw new IllegalArgumentException("А где cumАнда?");
+        }
+        this.alias = alias;
+        this.name = alias[0];
     }
 
-    protected Command(String name, String description) {
-        this(name);
+    protected Command(String description, String[] alias) {
+        this(alias);
         this.description = description;
     }
 
-    protected Command(String name, String arguments, String description) {
-        this(name, description);
+    protected Command(String arguments, String description, String[] alias) {
+        this(description, alias);
         this.arguments = arguments;
     }
 
@@ -67,16 +73,8 @@ public abstract class Command {
     /**
      * @return Множество активных псевдонимов этой команды
      */
-    public final Set<String> getAlias() {
+    public final String[] getAlias() {
         return alias;
-    }
-
-    /**
-     *
-     * @param alias Множество псевдонимов для этой команды
-     */
-    public final void setAlias(String... alias) {
-        this.alias = Set.of(alias);
     }
 
     public final String getPermission() {
@@ -111,7 +109,12 @@ public abstract class Command {
         return '/' + name + (arguments != null && !arguments.isEmpty() ? ' ' + arguments : "");
     }
     public final boolean equalsCommand(String s2) {
-        return (alias != null && !alias.isEmpty()) && alias.stream().anyMatch(e -> e.equalsIgnoreCase(s2));
+        for (String cmd : alias) {
+            if (cmd.equalsIgnoreCase(s2)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -119,11 +122,38 @@ public abstract class Command {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Command command = (Command) o;
-        return Objects.equals(name, command.name);
+        return name.equalsIgnoreCase(command.name);
     }
 
     @Override
     public int hashCode() {
         return name.hashCode();
+    }
+    static String getHelpCommand() {
+        if (helpCommand == null) {
+            StringBuilder builder = new StringBuilder();
+            for (Command cmd : Bot.getBotManager().getRegisteredCommands()) {
+                if (cmd.getDescription() != null && !cmd.getDescription().isEmpty()) {
+                    builder.append('/').append(cmd.getName());// /cmd - дададая | /cmd <да-да я> - описание
+                    if (cmd.getArguments() != null && !cmd.getArguments().isEmpty()) {
+                        builder.append(' ').append(cmd.getArguments());
+                    }
+                    builder.append(" - ").append(cmd.getDescription()).append('\n');
+                }
+            }
+            return helpCommand = builder.toString();
+        }
+        return helpCommand;
+    }
+
+    @Override
+    public String toString() {
+        return "Command{" +
+                "description='" + description + '\'' +
+                ", arguments='" + arguments + '\'' +
+                ", alias=" + Arrays.toString(alias) +
+                ", permission='" + permission + '\'' +
+                ", noPermissionMessage='" + noPermissionMessage + '\'' +
+                '}';
     }
 }
