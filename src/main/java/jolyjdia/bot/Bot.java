@@ -84,6 +84,7 @@ public final class Bot {
             () -> "Время: "+ new TemporalDuration(Duration.ofSeconds(LocalTime.now().toSecondOfDay()))
                     .toFormat(TimeFormatter.HOURS, TimeFormatter.MINUTES),
             () -> "Roses are red Niggers are dead",
+            () -> "Go, go, go mulignane",
             () -> "IQ = 0;",
             () -> "Манки дай",
             UtilsCommands::getNewYear
