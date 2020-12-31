@@ -34,6 +34,9 @@ public final class TemporalDuration {
         StringBuilder buf = new StringBuilder(timeFormatter.length * 10);//наугад
         for(TimeFormatter formatter : timeFormatter) {
             int x = formatter.to(duration);
+            if (x == 0) {
+                continue;
+            }
             buf.append(' ').append(x).append(' ');
             if ((x % 100 / 10) == 1) {
                 buf.append(formatter.getPlural());

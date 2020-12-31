@@ -29,7 +29,7 @@ public class UtilsCommands extends ConsumerCommand {
         //            }
     }
     public static String getNewYear() {
-        return "\uD83D\uDE44До Нового года осталось: "+TemporalDuration.of(1, 1, 0,0)+"\uD83D\uDE44";
+        return "\uD83D\uDE44До Нового Года осталось: "+TemporalDuration.of(1, 1, 0,0)+"\uD83D\uDE44";
     }
     @CommandLabel(alias = {"memory", "lag"}, desc = "состояние", permission = "shallwe.lag")
     public void lag() {

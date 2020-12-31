@@ -95,7 +95,8 @@ public final class Bot {
     public static void main(String[] args) throws ExecutionException, InterruptedException {
         CallbackApiLongPollHandler handler = new CallbackApiLongPollHandler();
         scheduler.runRepeatingSyncTaskAfter(() -> {
-            String text = status.next().get();
+            //String text = status.next().get();
+            String text = UtilsCommands.getNewYear();
             vkApiClient.status()
                     .set(userActor)
                     .text(text)
